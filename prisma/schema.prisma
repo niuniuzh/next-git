@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Students {
+  ID           Int       @id(map: "PK__Students__3214EC275285A795")
+  Name         String?   @db.NVarChar(100)
+  Age          Int?
+  EnrolledDate DateTime? @db.Date
+}
+
+model organizations {
+  id           Int            @id(map: "PK__organiza__3213E83F1BD023C3")
+  name         String         @unique(map: "UQ__organiza__72E12F1BE2715157") @db.VarChar(255)
+  github_id    Int?           @unique(map: "UQ__organiza__BEE5FF07C3B49B20")
+  created_at   DateTime?      @default(now(), map: "DF__organizat__creat__24B26D99") @db.DateTime
+  updated_at   DateTime?      @default(now(), map: "DF__organizat__updat__25A691D2") @db.DateTime
+  repositories repositories[]
+}
+
+model repositories {
+  id               Int            @id(map: "PK__reposito__3213E83F91B45532")
+  organization_id  Int
+  name             String         @db.VarChar(255)
+  full_name        String         @unique(map: "UQ__reposito__A79AD91F011B18FC") @db.VarChar(512)
+  github_id        Int?           @unique(map: "UQ__reposito__BEE5FF07F07558E6")
+  description      String?        @db.Text
+  url              String         @db.VarChar(512)
+  default_branch   String         @db.VarChar(255)
+  last_fetched_at  DateTime?      @db.DateTime
+  has_package_json Boolean
+  created_at       DateTime?      @default(now(), map: "DF__repositor__creat__2A6B46EF") @db.DateTime
+  updated_at       DateTime?      @default(now(), map: "DF__repositor__updat__2B5F6B28") @db.DateTime
+  package_jsons    package_jsons?
+  organization     organizations  @relation(fields: [organization_id], references: [id])
+}
+
+model package_jsons {
+  repository_id    Int          @id(map: "PK__package___5D3A00244DC452E4")
+  name             String?      @db.VarChar(255)
+  version          String?      @db.VarChar(255)
+  description      String?      @db.Text
+  author           String?      @db.VarChar(255)
+  license          String?      @db.VarChar(255)
+  dependencies     String?      @db.NVarChar(Max)
+  dev_dependencies String?      @db.NVarChar(Max)
+  scripts          String?      @db.NVarChar(Max)
+  full_content     String       @db.NVarChar(Max)
+  fetched_at       DateTime     @db.DateTime
+  created_at       DateTime?    @default(now(), map: "DF__package_j__creat__414EAC47") @db.DateTime
+  updated_at       DateTime?    @default(now(), map: "DF__package_j__updat__4242D080") @db.DateTime
+  repositories     repositories @relation(fields: [repository_id], references: [id], onUpdate: NoAction, map: "FK_package_jsons_repositories")
+}
